@@ -9,7 +9,14 @@ namespace CodeGenerator
 {
   class SpirVDefinition
   {
+    public int MajorVersion { get; private set; }
+    public int MinorVersion { get; private set; }
+    public int Revision { get; private set; }
+
+    public string VersionString => MajorVersion + "." + MinorVersion + "." + Revision;
+
     public InstructionDefinition[] Instructions;
+    public OperandKindDefinition[] OperandKinds;
 
     public void LoadFrom(string directory)
     {
@@ -20,6 +27,10 @@ namespace CodeGenerator
         grammarJson = JObject.Load(jr);
       }
 
+      MajorVersion = grammarJson["major_version"].ToObject<int>();
+      MinorVersion = grammarJson["minor_version"].ToObject<int>();
+      Revision = grammarJson["revision"].ToObject<int>();
+
       Instructions = grammarJson["instructions"].Select(jt =>
       {
         // Operands can be optional
@@ -29,13 +40,75 @@ namespace CodeGenerator
           return new Operand(op["kind"].ToString(), op["name"]?.ToString());
         }).ToArray();
 
-        return new InstructionDefinition(jt["opname"].ToString(), jt["opcode"].ToObject<int>(), operands);
+        string[] capabilities = jt["capabilities"]?.Select(x => x.ToString()).ToArray();
+
+        return new InstructionDefinition(jt["opname"].ToString(), jt["opcode"].ToObject<int>(), operands, capabilities);
       }).ToArray();
 
-      foreach (var instr in Instructions)
+      OperandKinds = grammarJson["operand_kinds"].Select(jt =>
       {
-        Console.WriteLine(instr.Name);
-      }
+        var category = jt["category"].ToObject<OperandCategory>();
+        Enumerant[] enumerables = null;
+
+        switch (category)
+        {
+          case OperandCategory.BitEnum:
+          case OperandCategory.ValueEnum:
+            enumerables = jt["enumerants"].Select(e =>
+            {
+              return new Enumerant(e["enumerant"].ToString(), e["value"].ToString(), null);
+            }).ToArray();
+            break;
+        }
+
+        return new OperandKindDefinition(category, jt["kind"].ToString(), jt["doc"]?.ToString(), enumerables);
+      }).ToArray();
+    }
+  }
+
+  enum Quantifier
+  {
+    ONCE,
+    OPTIONAL,
+    ZERO_OR_MORE
+  }
+
+  enum OperandCategory
+  {
+    BitEnum,
+    ValueEnum,
+    Id,
+    Literal,
+    Composite
+  }
+
+  class Enumerant
+  {
+    public string Name { get; }
+    public string Value { get; }
+    public string[] Capabilties { get; }
+
+    public Enumerant(string name, string value, string[] capabilities)
+    {
+      Name = name;
+      Value = value;
+      Capabilties = capabilities;
+    }
+  }
+
+  class OperandKindDefinition
+  {
+    public OperandCategory Category { get; }
+    public string Kind { get; }
+    public string Doc { get; }
+    public Enumerant[] Enumerables { get; }
+
+    public OperandKindDefinition(OperandCategory category, string kind, string doc, Enumerant[] enumerables)
+    {
+      Category = category;
+      Kind = kind;
+      Doc = doc;
+      Enumerables = enumerables;
     }
   }
 
@@ -57,11 +130,14 @@ namespace CodeGenerator
     public Operand[] Operands { get; }
     public int OpCode { get; }
 
-    public InstructionDefinition(string name, int opcode, Operand[] operands)
+    public string[] Capabilties { get; }
+
+    public InstructionDefinition(string name, int opcode, Operand[] operands, string[] capabilities)
     {
       Name = name;
       Operands = operands;
       OpCode = opcode;
+      Capabilties = capabilities;
     }
   }
 }
