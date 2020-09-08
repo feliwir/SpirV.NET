@@ -1,0 +1,16 @@
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.csprojAssemblyReference.cache
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.AssemblyInfoInputs.cache
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.AssemblyInfo.cs
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.csproj.CoreCompileInputs.cache
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/CodeGenerator
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/Newtonsoft.Json.dll
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.csproj.CopyComplete
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.dll
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.pdb
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/spirv.core.grammar.json
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/CodeGenerator.deps.json
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/CodeGenerator.runtimeconfig.json
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/CodeGenerator.runtimeconfig.dev.json
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/CodeGenerator.dll
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/bin/Debug/netcoreapp3.1/CodeGenerator.pdb
+/home/mbits/Development/SpirV.Emit/src/CodeGenerator/obj/Debug/netcoreapp3.1/CodeGenerator.genruntimeconfig.cache
