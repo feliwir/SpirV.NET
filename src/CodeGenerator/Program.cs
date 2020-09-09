@@ -33,6 +33,18 @@ namespace CodeGenerator
       Console.WriteLine($"SpirV specification version: {def.VersionString}");
       Console.WriteLine($"Outputting generated code files to {outputPath}.");
 
+      using (CSharpCodeWriter writer = new CSharpCodeWriter(Path.Combine(outputPath, "Grammar.gen.cs")))
+      {
+        writer.PushBlock("namespace SpirVNET");
+        writer.PushBlock($"public static class Grammar");
+        writer.WriteLine($"public static int MagicNumber => {def.MagicNumber};");
+        writer.WriteLine($"public static int MajorVersion => {def.MajorVersion};");
+        writer.WriteLine($"public static int MinorVersion => {def.MinorVersion};");
+        writer.WriteLine($"public static int Revision => {def.Revision};");
+        writer.PopBlock();
+        writer.PopBlock();
+      }
+
       using (CSharpCodeWriter writer = new CSharpCodeWriter(Path.Combine(outputPath, "Instructions.gen.cs")))
       {
         writer.PushBlock("namespace SpirVNET.Instructions");

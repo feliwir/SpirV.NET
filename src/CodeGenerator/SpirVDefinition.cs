@@ -12,6 +12,7 @@ namespace CodeGenerator
     public int MajorVersion { get; private set; }
     public int MinorVersion { get; private set; }
     public int Revision { get; private set; }
+    public int MagicNumber { get; private set; }
 
     public string VersionString => MajorVersion + "." + MinorVersion + "." + Revision;
 
@@ -27,6 +28,7 @@ namespace CodeGenerator
         grammarJson = JObject.Load(jr);
       }
 
+      MagicNumber = Convert.ToInt32(grammarJson["magic_number"].ToString(),16);
       MajorVersion = grammarJson["major_version"].ToObject<int>();
       MinorVersion = grammarJson["minor_version"].ToObject<int>();
       Revision = grammarJson["revision"].ToObject<int>();
