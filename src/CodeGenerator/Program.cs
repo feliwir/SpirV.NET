@@ -5,6 +5,16 @@ namespace CodeGenerator
 {
   class Program
   {
+    static string Sanitize(string name)
+    {
+        if(char.IsDigit(name[0]))
+        {
+            return "_" + name;
+        }
+
+        return name;
+    }
+
     static void Main(string[] args)
     {
       string outputPath;
@@ -25,10 +35,10 @@ namespace CodeGenerator
 
       using (CSharpCodeWriter writer = new CSharpCodeWriter(Path.Combine(outputPath, "Instructions.gen.cs")))
       {
-        writer.PushBlock("namespace SpirVEmit.Instructions");
+        writer.PushBlock("namespace SpirVNET.Instructions");
         // Base interface
         writer.PushBlock("public interface IInstruction");
-        writer.WriteLine("int OpCode {get; private set;}");
+        writer.WriteLine("int OpCode { get; }");
         writer.PopBlock();
 
         foreach (InstructionDefinition id in def.Instructions)
@@ -43,7 +53,7 @@ namespace CodeGenerator
       using (CSharpCodeWriter writer = new CSharpCodeWriter(Path.Combine(outputPath, "OperandKinds.gen.cs")))
       {
         writer.WriteLine("using System;");
-        writer.PushBlock("namespace SpirVEmit");
+        writer.PushBlock("namespace SpirVNET");
 
         foreach (OperandKindDefinition okd in def.OperandKinds)
         {
@@ -64,7 +74,8 @@ namespace CodeGenerator
             case OperandCategory.ValueEnum:
               foreach (var enumerant in okd.Enumerables)
               {
-                writer.WriteLine($"{enumerant.Name} = {enumerant.Value},");
+                var name = Sanitize(enumerant.Name);
+                writer.WriteLine($"{name} = {enumerant.Value},");
               }
 
               writer.PopBlock();
