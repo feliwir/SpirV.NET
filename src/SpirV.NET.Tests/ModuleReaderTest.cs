@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,8 +15,7 @@ namespace SpirVNET.Tests
         [Fact]
         public void CanReadModule()
         {
-            output.WriteLine("This is output from");
-            var spirvStream = typeof(ModuleReaderTests).Assembly.GetManifestResourceStream("SpirVNET.Tests.Assets.frag.spv");
+            var spirvStream = typeof(ModuleReaderTests).Assembly.GetManifestResourceStream("SpirV.NET.Tests.Assets.frag.spv");
             var module = ModuleReader.Parse(spirvStream);
         }
     }
