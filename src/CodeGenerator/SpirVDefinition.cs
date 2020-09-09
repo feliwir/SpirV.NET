@@ -7,139 +7,139 @@ using Newtonsoft.Json.Linq;
 
 namespace CodeGenerator
 {
-  class SpirVDefinition
-  {
-    public int MajorVersion { get; private set; }
-    public int MinorVersion { get; private set; }
-    public int Revision { get; private set; }
-    public int MagicNumber { get; private set; }
-
-    public string VersionString => MajorVersion + "." + MinorVersion + "." + Revision;
-
-    public InstructionDefinition[] Instructions;
-    public OperandKindDefinition[] OperandKinds;
-
-    public void LoadFrom(string directory)
+    class SpirVDefinition
     {
-      JObject grammarJson;
-      using (StreamReader fs = File.OpenText(Path.Combine(directory, "spirv.core.grammar.json")))
-      using (JsonTextReader jr = new JsonTextReader(fs))
-      {
-        grammarJson = JObject.Load(jr);
-      }
+        public uint MajorVersion { get; private set; }
+        public uint MinorVersion { get; private set; }
+        public uint Revision { get; private set; }
+        public uint MagicNumber { get; private set; }
 
-      MagicNumber = Convert.ToInt32(grammarJson["magic_number"].ToString(),16);
-      MajorVersion = grammarJson["major_version"].ToObject<int>();
-      MinorVersion = grammarJson["minor_version"].ToObject<int>();
-      Revision = grammarJson["revision"].ToObject<int>();
+        public string VersionString => MajorVersion + "." + MinorVersion + "." + Revision;
 
-      Instructions = grammarJson["instructions"].Select(jt =>
-      {
-        // Operands can be optional
-        Operand[] operands = jt["operands"]?.Select(op =>
+        public InstructionDefinition[] Instructions;
+        public OperandKindDefinition[] OperandKinds;
+
+        public void LoadFrom(string directory)
         {
-          // Name can be optional
-          return new Operand(op["kind"].ToString(), op["name"]?.ToString());
-        }).ToArray();
-
-        string[] capabilities = jt["capabilities"]?.Select(x => x.ToString()).ToArray();
-
-        return new InstructionDefinition(jt["opname"].ToString(), jt["opcode"].ToObject<int>(), operands, capabilities);
-      }).ToArray();
-
-      OperandKinds = grammarJson["operand_kinds"].Select(jt =>
-      {
-        var category = jt["category"].ToObject<OperandCategory>();
-        Enumerant[] enumerables = null;
-
-        switch (category)
-        {
-          case OperandCategory.BitEnum:
-          case OperandCategory.ValueEnum:
-            enumerables = jt["enumerants"].Select(e =>
+            JObject grammarJson;
+            using (StreamReader fs = File.OpenText(Path.Combine(directory, "spirv.core.grammar.json")))
+            using (JsonTextReader jr = new JsonTextReader(fs))
             {
-              return new Enumerant(e["enumerant"].ToString(), e["value"].ToString(), null);
+                grammarJson = JObject.Load(jr);
+            }
+
+            MagicNumber = Convert.ToUInt32(grammarJson["magic_number"].ToString(), 16);
+            MajorVersion = grammarJson["major_version"].ToObject<uint>();
+            MinorVersion = grammarJson["minor_version"].ToObject<uint>();
+            Revision = grammarJson["revision"].ToObject<uint>();
+
+            Instructions = grammarJson["instructions"].Select(jt =>
+            {
+          // Operands can be optional
+          Operand[] operands = jt["operands"]?.Select(op =>
+          {
+                  // Name can be optional
+                  return new Operand(op["kind"].ToString(), op["name"]?.ToString());
+                    }).ToArray();
+
+                string[] capabilities = jt["capabilities"]?.Select(x => x.ToString()).ToArray();
+
+                return new InstructionDefinition(jt["opname"].ToString(), jt["opcode"].ToObject<int>(), operands, capabilities);
             }).ToArray();
-            break;
+
+            OperandKinds = grammarJson["operand_kinds"].Select(jt =>
+            {
+                var category = jt["category"].ToObject<OperandCategory>();
+                Enumerant[] enumerables = null;
+
+                switch (category)
+                {
+                    case OperandCategory.BitEnum:
+                    case OperandCategory.ValueEnum:
+                        enumerables = jt["enumerants"].Select(e =>
+                  {
+                      return new Enumerant(e["enumerant"].ToString(), e["value"].ToString(), null);
+                  }).ToArray();
+                        break;
+                }
+
+                return new OperandKindDefinition(category, jt["kind"].ToString(), jt["doc"]?.ToString(), enumerables);
+            }).ToArray();
         }
-
-        return new OperandKindDefinition(category, jt["kind"].ToString(), jt["doc"]?.ToString(), enumerables);
-      }).ToArray();
     }
-  }
 
-  enum Quantifier
-  {
-    ONCE,
-    OPTIONAL,
-    ZERO_OR_MORE
-  }
-
-  enum OperandCategory
-  {
-    BitEnum,
-    ValueEnum,
-    Id,
-    Literal,
-    Composite
-  }
-
-  class Enumerant
-  {
-    public string Name { get; }
-    public string Value { get; }
-    public string[] Capabilties { get; }
-
-    public Enumerant(string name, string value, string[] capabilities)
+    enum Quantifier
     {
-      Name = name;
-      Value = value;
-      Capabilties = capabilities;
+        ONCE,
+        OPTIONAL,
+        ZERO_OR_MORE
     }
-  }
 
-  class OperandKindDefinition
-  {
-    public OperandCategory Category { get; }
-    public string Kind { get; }
-    public string Doc { get; }
-    public Enumerant[] Enumerables { get; }
-
-    public OperandKindDefinition(OperandCategory category, string kind, string doc, Enumerant[] enumerables)
+    enum OperandCategory
     {
-      Category = category;
-      Kind = kind;
-      Doc = doc;
-      Enumerables = enumerables;
+        BitEnum,
+        ValueEnum,
+        Id,
+        Literal,
+        Composite
     }
-  }
 
-  class Operand
-  {
-    public string Kind { get; }
-    public string Name { get; }
-
-    public Operand(string kind, string name)
+    class Enumerant
     {
-      Kind = kind;
-      Name = name;
+        public string Name { get; }
+        public string Value { get; }
+        public string[] Capabilties { get; }
+
+        public Enumerant(string name, string value, string[] capabilities)
+        {
+            Name = name;
+            Value = value;
+            Capabilties = capabilities;
+        }
     }
-  }
 
-  class InstructionDefinition
-  {
-    public string Name { get; }
-    public Operand[] Operands { get; }
-    public int OpCode { get; }
-
-    public string[] Capabilties { get; }
-
-    public InstructionDefinition(string name, int opcode, Operand[] operands, string[] capabilities)
+    class OperandKindDefinition
     {
-      Name = name;
-      Operands = operands;
-      OpCode = opcode;
-      Capabilties = capabilities;
+        public OperandCategory Category { get; }
+        public string Kind { get; }
+        public string Doc { get; }
+        public Enumerant[] Enumerables { get; }
+
+        public OperandKindDefinition(OperandCategory category, string kind, string doc, Enumerant[] enumerables)
+        {
+            Category = category;
+            Kind = kind;
+            Doc = doc;
+            Enumerables = enumerables;
+        }
     }
-  }
+
+    class Operand
+    {
+        public string Kind { get; }
+        public string Name { get; }
+
+        public Operand(string kind, string name)
+        {
+            Kind = kind;
+            Name = name;
+        }
+    }
+
+    class InstructionDefinition
+    {
+        public string Name { get; }
+        public Operand[] Operands { get; }
+        public int OpCode { get; }
+
+        public string[] Capabilties { get; }
+
+        public InstructionDefinition(string name, int opcode, Operand[] operands, string[] capabilities)
+        {
+            Name = name;
+            Operands = operands;
+            OpCode = opcode;
+            Capabilties = capabilities;
+        }
+    }
 }
