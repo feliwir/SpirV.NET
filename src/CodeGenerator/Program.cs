@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace CodeGenerator
 {
@@ -47,16 +48,43 @@ namespace CodeGenerator
 
             using (CSharpCodeWriter writer = new CSharpCodeWriter(Path.Combine(outputPath, "Instructions.gen.cs")))
             {
+                writer.WriteLine("using System.IO;");
                 writer.PushBlock("namespace SpirVNET.Instructions");
+
+                writer.PushBlock("public enum OpCode");
+                foreach (InstructionDefinition id in def.Instructions)
+                {
+                    writer.WriteLine($"{id.Name} = {id.OpCode},");
+                }
+                writer.PopBlock();
+
+                writer.PushBlock("public static class InstructionCreator");
+                writer.PushBlock("public static IInstruction CreateInstruction(OpCode opcode)");
+                writer.PushBlock("switch(opcode)");
+                HashSet<int> handledCases = new HashSet<int>();
+                foreach (InstructionDefinition id in def.Instructions)
+                {
+                    // Skip aliases
+                    if(handledCases.Contains(id.OpCode))
+                        continue;
+
+                    writer.WriteLine($"case OpCode.{id.Name}: return new {id.Name}();");
+                    handledCases.Add(id.OpCode);
+                }
+                writer.WriteLine("default: throw new InvalidDataException($\"Opcode ({opcode}) does not exist!\");");
+                writer.PopBlock();
+                writer.PopBlock();         
+                writer.PopBlock();
+
                 // Base interface
                 writer.PushBlock("public interface IInstruction");
-                writer.WriteLine("int OpCode { get; }");
+                writer.WriteLine("OpCode Opcode { get; }");
                 writer.PopBlock();
 
                 foreach (InstructionDefinition id in def.Instructions)
                 {
                     writer.PushBlock($"public class {id.Name} : IInstruction");
-                    writer.WriteLine($"public int OpCode => {id.OpCode};");
+                    writer.WriteLine($"public OpCode Opcode => OpCode.{id.Name};");
                     writer.PopBlock();
                 }
                 writer.PopBlock();
